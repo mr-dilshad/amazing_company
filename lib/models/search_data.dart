@@ -29,14 +29,14 @@ class SeachHelper with ChangeNotifier {
     return [..._searchData];
   }
 
-  Future<void> fetchSeachResult() async {
+  Future<List<SearchData>> fetchSeachResult() async {
     var url = "http://hn.algolia.com/api/v1/search?query=test";
     try {
       final response = await http.get(url);
       final _extractedResult =
           json.decode(response.body) as Map<String, dynamic>;
 
-      if (_extractedResult == null) return;
+      if (_extractedResult == null) return [];
 
       List<SearchData> _loadedSeach = [];
 
@@ -48,8 +48,8 @@ class SeachHelper with ChangeNotifier {
       });
 
       _searchData = _loadedSeach;
-
-      notifyListeners();
+      return this.getSeachData;
+      // notifyListeners();
     } catch (e) {
       print(e);
     }

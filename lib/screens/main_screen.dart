@@ -27,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
       if (_filter.text.isEmpty) {
         setState(() {
           _searchText = "";
-          filteredNames = names;
+          filteredNames.addAll(names);
         });
       } else {
         setState(() {
@@ -40,17 +40,17 @@ class _MainScreenState extends State<MainScreen> {
   void _searchPressed() {
     setState(() {
       if (this._searchIcon.icon == Icons.search) {
-        this._searchIcon = new Icon(Icons.close);
-        this._appBarTitle = new TextField(
+        this._searchIcon = Icon(Icons.close);
+        this._appBarTitle = TextField(
           controller: _filter,
-          decoration: new InputDecoration(
-              prefixIcon: new Icon(Icons.search), hintText: 'Search...'),
+          decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search), hintText: 'Search...'),
         );
       } else {
-        this._searchIcon = new Icon(Icons.search);
-        this._appBarTitle = new Text(widget.title);
-        filteredNames = names;
+        this._searchIcon = Icon(Icons.search);
+        this._appBarTitle = Text(widget.title);
         _filter.clear();
+        filteredNames.clear();
       }
     });
   }
@@ -59,7 +59,8 @@ class _MainScreenState extends State<MainScreen> {
     if (!(_searchText.isEmpty)) {
       List<SearchData> tempList = [];
       for (int i = 0; i < filteredNames.length; i++) {
-        if (filteredNames[i].name
+        if (filteredNames[i]
+            .name
             .toLowerCase()
             .contains(_searchText.toLowerCase())) {
           tempList.add(filteredNames[i]);
@@ -71,8 +72,13 @@ class _MainScreenState extends State<MainScreen> {
       itemCount: names == null ? 0 : filteredNames?.length,
       itemBuilder: (BuildContext context, int index) {
         return new ListTile(
+          key: ValueKey(filteredNames[index].objectId),
           title: Text(filteredNames[index].name),
-          onTap: () => Navigator.of(context).pushNamed( DetailScreen.routeName, arguments: SearchData(name: filteredNames[index].name, objectId: filteredNames[index].objectId, points: filteredNames[index].points)),
+          onTap: () => Navigator.of(context).pushNamed(DetailScreen.routeName,
+              arguments: SearchData(
+                  name: filteredNames[index].name,
+                  objectId: filteredNames[index].objectId,
+                  points: filteredNames[index].points)),
         );
       },
     );
@@ -89,32 +95,24 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  bool _isInit = true;
+  void _initialization() async {
+    names = await Provider.of<SeachHelper>(context, listen: false)
+        .fetchSeachResult();
+  }
+
   bool _isLoaded = false;
 
   @override
   void initState() {
+    _isLoaded = true;
+    _initialization();
+    _isLoaded = false;
     super.initState();
   }
 
   @override
-  void didChangeDependencies() {
-    if (_isInit) {
-      setState(() {
-        _isLoaded = true;
-      });
-      Provider.of<SeachHelper>(context, listen: false)
-          .fetchSeachResult()
-          .then((value) {
-        setState(() {
-          print('inside provider');
-          names = Provider.of<SeachHelper>(context, listen: false).getSeachData;
-          _isLoaded = false;
-        });
-      });
-    }
-    _isInit = false;
-    super.didChangeDependencies();
+  void dispose() {
+    _filter.dispose();
   }
 
   Widget build(BuildContext context) {
