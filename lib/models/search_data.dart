@@ -1,8 +1,10 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' show parse;
 
+//search data model
 class SearchData {
   final String name;
   final String objectId;
@@ -16,8 +18,10 @@ class SearchData {
   }
 }
 
+//helper class for search data
+
 class SeachHelper with ChangeNotifier {
-  String _urlString = "";
+  String _urlString = "http://hn.algolia.com/api/v1";
   static List<SearchData> _searchData = [];
   static List<String> _comments = [];
 
@@ -29,8 +33,9 @@ class SeachHelper with ChangeNotifier {
     return [..._searchData];
   }
 
+//method for fetching search results
   Future<List<SearchData>> fetchSeachResult() async {
-    var url = "http://hn.algolia.com/api/v1/search?query=test";
+    var url = "$_urlString/search?query=test";
     try {
       final response = await http.get(url);
       final _extractedResult =
@@ -55,8 +60,9 @@ class SeachHelper with ChangeNotifier {
     }
   }
 
-  Future<List<String>> fetchComments(String id) async {
-    var url = "http://hn.algolia.com/api/v1/items/$id";
+//method for fetching comments
+  Future<List<String>> fetchComments(String objectid) async {
+    var url = "$_urlString/items/$objectid";
     try {
       final response = await http.get(url);
       final _extractedResult =
@@ -65,9 +71,10 @@ class SeachHelper with ChangeNotifier {
       if (_extractedResult == null) return [];
 
       List<String> _loadedSeach = [];
-
+      print('object');
       _extractedResult['children'].forEach((element) {
-        _loadedSeach.add(element['text']);
+        _loadedSeach.add(_parseHtmlString(
+            element['text'].toString()));
       });
 
       print(_loadedSeach);
@@ -77,5 +84,11 @@ class SeachHelper with ChangeNotifier {
     } catch (e) {
       print(e);
     }
+  }
+//meathod to remove html tags
+  String _parseHtmlString(String htmlString) {
+    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+
+    return htmlString.replaceAll(exp, '');
   }
 }

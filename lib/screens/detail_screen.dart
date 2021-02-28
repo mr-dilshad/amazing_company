@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 class DetailScreen extends StatelessWidget {
   static String routeName = '/detailScreen';
 
+
   @override
   Widget build(BuildContext context) {
     final SearchData selectedData = ModalRoute.of(context).settings.arguments;
@@ -19,18 +20,20 @@ class DetailScreen extends StatelessWidget {
       ),
       body: Column(
         children: <Widget>[
-
           Container(
             margin: EdgeInsets.all(10.0),
             padding: EdgeInsets.all(8.0),
-            color: Colors.redAccent,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              color: Colors.redAccent,
+            ),
             child: Text('Points : ${selectedData.points.toString()}'),
           ),
           SizedBox(
             height: 20,
           ),
           Expanded(
-                      child: FutureBuilder(
+            child: FutureBuilder(
                 future: Provider.of<SeachHelper>(context)
                     .fetchComments(selectedData.objectId),
                 builder: (context, snapshot) =>

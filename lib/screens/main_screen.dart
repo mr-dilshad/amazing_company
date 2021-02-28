@@ -17,8 +17,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final TextEditingController _filter = new TextEditingController();
   String _searchText = "";
-  List<SearchData> names = [];
-  List<SearchData> filteredNames = [];
+  //variable for storing fetched data
+  List<SearchData> _title = [];
+  //variable for storing filtered data
+  List<SearchData> _filteredtitle = [];
   Icon _searchIcon = new Icon(Icons.search);
   Widget _appBarTitle = new Text('Search Example');
 
@@ -27,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
       if (_filter.text.isEmpty) {
         setState(() {
           _searchText = "";
-          filteredNames.addAll(names);
+          _filteredtitle.addAll(_title);
         });
       } else {
         setState(() {
@@ -37,69 +39,7 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _searchPressed() {
-    setState(() {
-      if (this._searchIcon.icon == Icons.search) {
-        this._searchIcon = Icon(Icons.close);
-        this._appBarTitle = TextField(
-          controller: _filter,
-          decoration: InputDecoration(
-              prefixIcon: Icon(Icons.search), hintText: 'Search...'),
-        );
-      } else {
-        this._searchIcon = Icon(Icons.search);
-        this._appBarTitle = Text(widget.title);
-        _filter.clear();
-        filteredNames.clear();
-      }
-    });
-  }
-
-  Widget _buildList() {
-    if (!(_searchText.isEmpty)) {
-      List<SearchData> tempList = [];
-      for (int i = 0; i < filteredNames.length; i++) {
-        if (filteredNames[i]
-            .name
-            .toLowerCase()
-            .contains(_searchText.toLowerCase())) {
-          tempList.add(filteredNames[i]);
-        }
-      }
-      filteredNames = tempList;
-    }
-    return ListView.builder(
-      itemCount: names == null ? 0 : filteredNames?.length,
-      itemBuilder: (BuildContext context, int index) {
-        return new ListTile(
-          key: ValueKey(filteredNames[index].objectId),
-          title: Text(filteredNames[index].name),
-          onTap: () => Navigator.of(context).pushNamed(DetailScreen.routeName,
-              arguments: SearchData(
-                  name: filteredNames[index].name,
-                  objectId: filteredNames[index].objectId,
-                  points: filteredNames[index].points)),
-        );
-      },
-    );
-  }
-
-  Widget _buildBar(BuildContext context) {
-    return new AppBar(
-      centerTitle: true,
-      title: _appBarTitle,
-      leading: new IconButton(
-        icon: _searchIcon,
-        onPressed: _searchPressed,
-      ),
-    );
-  }
-
-  void _initialization() async {
-    names = await Provider.of<SeachHelper>(context, listen: false)
-        .fetchSeachResult();
-  }
-
+  //turn to false when data is fetched
   bool _isLoaded = false;
 
   @override
@@ -113,6 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void dispose() {
     _filter.dispose();
+    super.dispose();
   }
 
   Widget build(BuildContext context) {
@@ -126,6 +67,74 @@ class _MainScreenState extends State<MainScreen> {
               child: _buildList(),
             ),
       resizeToAvoidBottomPadding: false,
+    );
+  }
+
+  //meathod to fetch and intialize data
+  void _initialization() async {
+    _title = await Provider.of<SeachHelper>(context, listen: false)
+        .fetchSeachResult();
+  }
+
+  //callback when title bar's leading icon is pressed
+  void _searchPressed() {
+    setState(() {
+      if (this._searchIcon.icon == Icons.search) {
+        this._searchIcon = Icon(Icons.close);
+        this._appBarTitle = TextField(
+          controller: _filter,
+          decoration: InputDecoration(
+              prefixIcon: Icon(Icons.search), hintText: 'Search...'),
+        );
+      } else {
+        this._searchIcon = Icon(Icons.search);
+        this._appBarTitle = Text(widget.title);
+        _filter.clear();
+        _filteredtitle.clear();
+      }
+    });
+  }
+
+  // list of results below search bar
+  Widget _buildList() {
+    if (!(_searchText.isEmpty)) {
+      List<SearchData> tempList = [];
+      for (int i = 0; i < _filteredtitle.length; i++) {
+        if (_filteredtitle[i]
+            .name
+            .toLowerCase()
+            .contains(_searchText.toLowerCase())) {
+          tempList.add(_filteredtitle[i]);
+        }
+      }
+      _filteredtitle = tempList;
+    }
+    return ListView.builder(
+      itemCount: _title == null ? 0 : _filteredtitle.length,
+      itemBuilder: (BuildContext context, int index) {
+        return new ListTile(
+          key: ValueKey(_filteredtitle[index].objectId),
+          title: Text(_filteredtitle[index].name),
+          onTap: () => Navigator.of(context).pushNamed(DetailScreen.routeName,
+              arguments: SearchData(
+                  name: _filteredtitle[index].name,
+                  objectId: _filteredtitle[index].objectId,
+                  points: _filteredtitle[index].points)),
+        );
+      },
+    );
+  }
+
+
+//title bar widget
+  Widget _buildBar(BuildContext context) {
+    return new AppBar(
+      centerTitle: true,
+      title: _appBarTitle,
+      leading: new IconButton(
+        icon: _searchIcon,
+        onPressed: _searchPressed,
+      ),
     );
   }
 }
