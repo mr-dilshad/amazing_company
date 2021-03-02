@@ -1,3 +1,4 @@
+import 'package:amazing_company/constants/color_constants.dart';
 import 'package:amazing_company/screens/detail_screen.dart';
 import 'package:flutter/material.dart';
 

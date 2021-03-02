@@ -1,3 +1,4 @@
+import 'package:amazing_company/constants/color_constants.dart';
 import 'package:amazing_company/models/search_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,9 +26,9 @@ class DetailScreen extends StatelessWidget {
             padding: EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(10)),
-              color: Colors.redAccent,
+              color: kPrimaryColorLight,
             ),
-            child: Text('Points : ${selectedData.points.toString()}'),
+            child: Text('Points : ${selectedData.points.toString()}',style: TextStyle(color: kPrimaryColorDark),),
           ),
           SizedBox(
             height: 20,
